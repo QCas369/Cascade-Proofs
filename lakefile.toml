@@ -1,0 +1,15 @@
+name = "CascadeProofs"
+version = "0.1.0"
+defaultTargets = ["Verification"]
+
+# Higher kernel/elaborator recursion budget for the exact 171-edge enumeration.
+# Does not alter the frozen source proof or relax axiom requirements.
+leanOptions = { maxRecDepth = 4096 }
+
+[[lean_lib]]
+name = "Verification"
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.27.0"
