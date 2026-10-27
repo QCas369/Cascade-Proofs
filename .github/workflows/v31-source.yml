@@ -1,0 +1,33 @@
+name: V31 experimental pulse-sign calculation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-signs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Lean and prepare Mathlib cache
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lake" update
+          "$HOME/.elan/bin/lake" exe cache get
+      - name: Compile frozen V10 dependency
+        run: lake build Verification.V10_Core_Solution
+      - name: Exact pulse-source sign calculation
+        run: lake env lean -DmaxRecDepth=12000 -DmaxHeartbeats=0 Verification/V31_SourceSigns_Witness.lean
+      - name: Direct axiom dependency audit for source signs
+        run: |
+          lake build
+          lake env lean -DmaxRecDepth=12000 -DmaxHeartbeats=0 AxiomAudit.lean | tee axiom-audit.txt
+          if grep -E 'sorryAx|Lean\.ofReduceBool|Lean\.trustCompiler|ofReduceBool|axiom:|sorry' axiom-audit.txt; then
+            exit 1
+          fi
