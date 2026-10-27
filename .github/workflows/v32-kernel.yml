@@ -26,6 +26,7 @@ jobs:
         run: lake env lean -DmaxRecDepth=12000 -DmaxHeartbeats=0 Verification/V32_PulseKernel_Witness.lean
       - name: Audit V32 theorem axioms
         run: |
+          set -euo pipefail
           lake build
           lake env lean -DmaxRecDepth=12000 -DmaxHeartbeats=0 AxiomAudit.lean | tee axiom-audit.txt
           if grep -E 'sorryAx|Lean\.trustCompiler|Lean\.ofReduceBool|ofReduceBool|axiom:|sorry' axiom-audit.txt; then
