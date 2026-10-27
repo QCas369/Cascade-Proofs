@@ -1,0 +1,52 @@
+name: V10 Core — Lean kernel and axiom verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-v10-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout curated public verification source
+        uses: actions/checkout@v4
+
+      - name: Install pinned Lean and resolve Mathlib dependencies
+        shell: bash
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lake" update
+
+      - name: Build Lean target and audit exact source theorem namespace
+        uses: leanprover/lean-action@v1
+        with:
+          build: true
+          test: false
+          use-mathlib-cache: true
+          axiom-audit: true
+          axiom-audit-root: CascadeC04
+          axiom-audit-allow: "propext,Classical.choice,Quot.sound"
+
+      - name: Recompile exact V10 file and print theorem axioms
+        shell: bash
+        run: |
+          lake env lean Verification/V10_Core_Solution.lean
+          lake env lean AxiomAudit.lean | tee axiom-audit.txt
+          if grep -E 'sorryAx|Lean.ofReduceBool|Lean.trustCompiler|ofReduceBool|axiom:|sorry' axiom-audit.txt; then
+            echo 'Forbidden axiom or admitted proof in transitive axiom report'
+            exit 1
+          fi
+
+      - name: Verify no proof holes in source
+        shell: bash
+        run: |
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|native_decide)([^[:alnum:]_]|$)' Verification/V10_Core_Solution.lean; then
+            echo 'Forbidden proof hole or native compiler decision procedure'
+            exit 1
+          fi
