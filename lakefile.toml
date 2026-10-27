@@ -1,0 +1,11 @@
+name = "CascadeProofs"
+version = "0.1.0"
+defaultTargets = ["Verification"]
+
+[[lean_lib]]
+name = "Verification"
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.27.0"
