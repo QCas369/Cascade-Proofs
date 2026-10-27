@@ -1,0 +1,34 @@
+name: V32 experimental exact pulse-kernel calculation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integer-kernel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare pinned Lean and Mathlib
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lake" update
+          "$HOME/.elan/bin/lake" exe cache get
+      - name: Build V31 verified source-sign prerequisite
+        run: lake build Verification.V31_SourceSigns_Witness
+      - name: Compile integer source kernel equations in Lean
+        run: lake env lean -DmaxRecDepth=12000 -DmaxHeartbeats=0 Verification/V32_PulseKernel_Witness.lean
+      - name: Audit V32 theorem axioms
+        run: |
+          set -euo pipefail
+          lake build
+          lake env lean -DmaxRecDepth=12000 -DmaxHeartbeats=0 AxiomAudit.lean | tee axiom-audit.txt
+          if grep -E 'sorryAx|Lean\.trustCompiler|Lean\.ofReduceBool|ofReduceBool|axiom:|sorry' axiom-audit.txt; then
+            exit 1
+          fi
