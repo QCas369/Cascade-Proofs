@@ -36,6 +36,7 @@ jobs:
       - name: Recompile exact V10 file and print theorem axioms
         shell: bash
         run: |
+          set -euo pipefail
           lake env lean -DmaxRecDepth=4096 Verification/V10_Core_Solution.lean
           lake env lean -DmaxRecDepth=4096 AxiomAudit.lean | tee axiom-audit.txt
           if grep -E 'sorryAx|Lean.ofReduceBool|Lean.trustCompiler|ofReduceBool|axiom:|sorry' axiom-audit.txt; then
