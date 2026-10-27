@@ -38,7 +38,7 @@ def pulseTurn (u v w : Nat) : ℤ :=
 
 def pulsePentagonGain (c : List Nat) : ℤ :=
   ((List.range 5).map (fun i =>
-    pulseTurn (c[(i+4)%5]!) (c[i]!) (c[(i+1)%5]!))).prod
+    pulseTurn (c.getD ((i+4)%5) 0) (c.getD i 0) (c.getD ((i+1)%5) 0))).prod
 
 set_option maxRecDepth 12000
 set_option maxHeartbeats 0
