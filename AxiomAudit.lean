@@ -5,3 +5,4 @@ import Verification.V31_SourceSigns_Witness
 #print axioms CascadeC04.no_scalar_signs_match_six_actual_cycle_gains
 #print axioms CascadeC04.all_cycle_edges_from_Perkel_shifts
 #print axioms CascadeV31.six_signs_from_frozen_pulse_witnesses
+#print axioms CascadeV32.all_855_pulse_kernel_rows_vanish
