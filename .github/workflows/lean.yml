@@ -30,7 +30,7 @@ jobs:
           test: false
           use-mathlib-cache: true
           axiom-audit: true
-          axiom-audit-root: CascadeC04
+          axiom-audit-root: Verification
           axiom-audit-allow: "propext,Classical.choice,Quot.sound"
 
       - name: Recompile exact V10 file and print theorem axioms
